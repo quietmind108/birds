@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>野鳥ノート</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700&family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --paper: #faf7f2;
+    --ink: #2c2416;
+    --accent: #5a7a4a;
+    --accent2: #c4763a;
+    --muted: #9a8f7e;
+    --line: #e0d8cc;
+    --check: #5a7a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  header {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 20px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  header h1 {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+  }
+
+  header p {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--ink);
+    border-top: 1px solid #3c3428;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  .tab.active {
+    color: var(--bg);
+    border-bottom: 2px solid var(--accent2);
+  }
+
+  /* ===== RECORD FORM ===== */
+  .record-form {
+    padding: 20px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .form-row {
+    margin-bottom: 14px;
+  }
+
+  .form-row label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 5px;
+  }
+
+  .form-row input, .form-row select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+    appearance: none;
+  }
+
+  .form-row input:focus, .form-row select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  /* ===== BIRD LIST ===== */
+  .search-bar {
+    padding: 14px 20px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 108px;
+    z-index: 50;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 20px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--ink);
+  }
+
+  .search-bar input:focus { outline: none; border-color: var(--accent); }
+
+  .bird-group {
+    padding: 0 20px;
+  }
+
+  .group-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    padding: 12px 0 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .bird-item {
+    display: flex;
+    align-items: center;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    gap: 12px;
+    transition: background 0.15s;
+  }
+
+  .bird-item:active { background: var(--line); }
+
+  .bird-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--line);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+
+  .bird-item.checked .bird-check {
+    background: var(--check);
+    border-color: var(--check);
+  }
+
+  .bird-check svg {
+    display: none;
+    width: 12px;
+    height: 12px;
+  }
+
+  .bird-item.checked .bird-check svg { display: block; }
+
+  .bird-info { flex: 1; }
+
+  .bird-name-jp {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .bird-name-en {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .bird-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  /* ===== LOG ===== */
+  .log-list { padding: 0 20px 80px; }
+
+  .log-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.8;
+  }
+
+  .log-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .log-bird {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .log-date {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .log-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .log-meta span::before {
+    margin-right: 3px;
+  }
+
+  .log-delete {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--muted);
+  }
+
+  /* ===== RECORD BUTTON ===== */
+  .record-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.2s;
+  }
+
+  .record-btn:active { background: #4a6a3a; }
+
+  /* ===== SECTION VIEWS ===== */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .stats-bar {
+    display: flex;
+    padding: 14px 20px;
+    gap: 16px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Shippori Mincho', serif;
+    font-size: 24px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>野鳥ノート</h1>
+  <p>YACHO NOTE — 観察記録</p>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('list')">鳥リスト</button>
+    <button class="tab" onclick="switchTab('record')">記録する</button>
+    <button class="tab" onclick="switchTab('log')">ログ</button>
+  </div>
+</header>
+
+<!-- ===== LIST TAB ===== -->
+<div class="section active" id="tab-list">
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍　鳥の名前で検索..." oninput="filterBirds()">
+  </div>
+  <div id="birdList"></div>
+</div>
+
+<!-- ===== RECORD TAB ===== -->
+<div class="section" id="tab-record">
+  <div class="record-form">
+    <div class="form-row">
+      <label>野鳥</label>
+      <select id="recordBird">
+        <option value="">選択してください</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>日付</label>
+      <input type="date" id="recordDate">
+    </div>
+    <div class="form-row">
+      <label>場所</label>
+      <input type="text" id="recordPlace" placeholder="例：代々木公園、近所の川...">
+    </div>
+    <div class="form-row">
+      <label>メモ（任意）</label>
+      <input type="text" id="recordMemo" placeholder="天気、様子など...">
+    </div>
+    <button class="record-btn" onclick="addRecord()">記録する</button>
+  </div>
+</div>
+
+<!-- ===== LOG TAB ===== -->
+<div class="section" id="tab-log">
+  <div class="stats-bar">
+    <div class="stat">
+      <div class="stat-num" id="statTotal">0</div>
+      <div class="stat-label">総記録数</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="statSpecies">0</div>
+      <div class="stat-label">種類数</div>
+    </div>
+  </div>
+  <div class="log-list" id="logList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BIRDS = [
+  { name: "スズメ", en: "Tree Sparrow", icon: "🐦", group: "身近な鳥" },
+  { name: "ハシブトガラス", en: "Jungle Crow", icon: "🐦‍⬛", group: "身近な鳥" },
+  { name: "ハシボソガラス", en: "Carrion Crow", icon: "🐦‍⬛", group: "身近な鳥" },
+  { name: "ヒヨドリ", en: "Brown-eared Bulbul", icon: "🐦", group: "身近な鳥" },
+  { name: "ムクドリ", en: "White-cheeked Starling", icon: "🐦", group: "身近な鳥" },
+  { name: "キジバト", en: "Oriental Turtle Dove", icon: "🕊️", group: "身近な鳥" },
+  { name: "ドバト", en: "Rock Dove", icon: "🕊️", group: "身近な鳥" },
+  { name: "シジュウカラ", en: "Japanese Tit", icon: "🐦", group: "山・林の鳥" },
+  { name: "ヤマガラ", en: "Varied Tit", icon: "🐦", group: "山・林の鳥" },
+  { name: "エナガ", en: "Long-tailed Tit", icon: "🐦", group: "山・林の鳥" },
+  { name: "メジロ", en: "Japanese White-eye", icon: "🐦", group: "山・林の鳥" },
+  { name: "ウグイス", en: "Japanese Bush Warbler", icon: "🐦", group: "山・林の鳥" },
+  { name: "コゲラ", en: "Japanese Pygmy Woodpecker", icon: "🐦", group: "山・林の鳥" },
+  { name: "アオゲラ", en: "Japanese Green Woodpecker", icon: "🐦", group: "山・林の鳥" },
+  { name: "キビタキ", en: "Narcissus Flycatcher", icon: "🐦", group: "山・林の鳥" },
+  { name: "オオルリ", en: "Blue-and-white Flycatcher", icon: "🐦", group: "山・林の鳥" },
+  { name: "カワセミ", en: "Common Kingfisher", icon: "🐦", group: "水辺の鳥" },
+  { name: "アオサギ", en: "Grey Heron", icon: "🦢", group: "水辺の鳥" },
+  { name: "ダイサギ", en: "Great Egret", icon: "🦢", group: "水辺の鳥" },
+  { name: "コサギ", en: "Little Egret", icon: "🦢", group: "水辺の鳥" },
+  { name: "カルガモ", en: "Spot-billed Duck", icon: "🦆", group: "水辺の鳥" },
+  { name: "マガモ", en: "Mallard", icon: "🦆", group: "水辺の鳥" },
+  { name: "コガモ", en: "Eurasian Teal", icon: "🦆", group: "水辺の鳥" },
+  { name: "オオバン", en: "Eurasian Coot", icon: "🐦", group: "水辺の鳥" },
+  { name: "バン", en: "Common Moorhen", icon: "🐦", group: "水辺の鳥" },
+  { name: "セグロカモメ", en: "Vega Gull", icon: "🐦", group: "水辺の鳥" },
+  { name: "ユリカモメ", en: "Black-headed Gull", icon: "🐦", group: "水辺の鳥" },
+  { name: "トビ", en: "Black Kite", icon: "🦅", group: "猛禽類" },
+  { name: "ノスリ", en: "Common Buzzard", icon: "🦅", group: "猛禽類" },
+  { name: "オオタカ", en: "Northern Goshawk", icon: "🦅", group: "猛禽類" },
+  { name: "ハヤブサ", en: "Peregrine Falcon", icon: "🦅", group: "猛禽類" },
+  { name: "チョウゲンボウ", en: "Common Kestrel", icon: "🦅", group: "猛禽類" },
+  { name: "ツバメ", en: "Barn Swallow", icon: "🐦", group: "季節の鳥" },
+  { name: "コシアカツバメ", en: "Red-rumped Swallow", icon: "🐦", group: "季節の鳥" },
+  { name: "ビンズイ", en: "Olive-backed Pipit", icon: "🐦", group: "季節の鳥" },
+  { name: "モズ", en: "Bull-headed Shrike", icon: "🐦", group: "季節の鳥" },
+  { name: "ジョウビタキ", en: "Daurian Redstart", icon: "🐦", group: "季節の鳥" },
+  { name: "ルリビタキ", en: "Red-flanked Bluetail", icon: "🐦", group: "季節の鳥" },
+  { name: "アカハラ", en: "Brown-headed Thrush", icon: "🐦", group: "季節の鳥" },
+  { name: "シロハラ", en: "Pale Thrush", icon: "🐦", group: "季節の鳥" },
+  { name: "ツグミ", en: "Dusky Thrush", icon: "🐦", group: "季節の鳥" },
+  { name: "キジ", en: "Green Pheasant", icon: "🦚", group: "その他" },
+  { name: "ヤマドリ", en: "Copper Pheasant", icon: "🦚", group: "その他" },
+  { name: "フクロウ", en: "Ural Owl", icon: "🦉", group: "その他" },
+  { name: "アオバズク", en: "Brown Hawk-Owl", icon: "🦉", group: "その他" },
+  { name: "ヨタカ", en: "Grey Nightjar", icon: "🐦", group: "その他" },
+];
+
+let records = JSON.parse(localStorage.getItem('yachoRecords') || '[]');
+
+// ===== RENDER BIRD LIST =====
+function renderBirdList(filter = "") {
+  const container = document.getElementById('birdList');
+  const groups = {};
+
+  BIRDS.forEach(b => {
+    if (!b.name.includes(filter) && !b.en.toLowerCase().includes(filter.toLowerCase())) return;
+    if (!groups[b.group]) groups[b.group] = [];
+    groups[b.group].push(b);
+  });
+
+  container.innerHTML = Object.entries(groups).map(([group, birds]) => `
+    <div class="bird-group">
+      <div class="group-label">${group}</div>
+      ${birds.map(b => {
+        const isChecked = records.some(r => r.bird === b.name);
+        return `
+        <div class="bird-item ${isChecked ? 'checked' : ''}" onclick="quickRecord('${b.name}')">
+          <div class="bird-check">
+            <svg viewBox="0 0 12 12" fill="none">
+              <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="bird-info">
+            <div class="bird-name-jp">${b.name}</div>
+            <div class="bird-name-en">${b.en}</div>
+          </div>
+          <div class="bird-icon">${b.icon}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+}
+
+function filterBirds() {
+  renderBirdList(document.getElementById('searchInput').value);
+}
+
+// ===== QUICK RECORD FROM LIST =====
+function quickRecord(birdName) {
+  const today = new Date().toISOString().split('T')[0];
+  const record = {
+    id: Date.now(),
+    bird: birdName,
+    date: today,
+    place: "",
+    memo: ""
+  };
+  records.unshift(record);
+  saveRecords();
+  renderBirdList(document.getElementById('searchInput').value);
+  renderLog();
+  showToast(`${birdName} を記録しました`);
+}
+
+// ===== ADD RECORD FROM FORM =====
+function addRecord() {
+  const bird = document.getElementById('recordBird').value;
+  const date = document.getElementById('recordDate').value;
+  const place = document.getElementById('recordPlace').value;
+  const memo = document.getElementById('recordMemo').value;
+
+  if (!bird) { showToast("鳥を選んでください"); return; }
+  if (!date) { showToast("日付を入力してください"); return; }
+
+  const record = { id: Date.now(), bird, date, place, memo };
+  records.unshift(record);
+  saveRecords();
+  renderBirdList();
+  renderLog();
+  showToast(`${bird} を記録しました！`);
+
+  document.getElementById('recordBird').value = "";
+  document.getElementById('recordPlace').value = "";
+  document.getElementById('recordMemo').value = "";
+  switchTab('log');
+}
+
+// ===== RENDER LOG =====
+function renderLog() {
+  const container = document.getElementById('logList');
+  const total = records.length;
+  const species = new Set(records.map(r => r.bird)).size;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statSpecies').textContent = species;
+
+  if (records.length === 0) {
+    container.innerHTML = `<div class="log-empty">まだ記録がありません。<br>鳥リストからチェックしてみよう！</div>`;
+    return;
+  }
+
+  container.innerHTML = records.map(r => `
+    <div class="log-item">
+      <div class="log-header">
+        <div class="log-bird">${r.bird}</div>
+        <button class="log-delete" onclick="deleteRecord(${r.id})">✕</button>
+      </div>
+      <div class="log-meta">
+        <span>📅 ${r.date}</span>
+        ${r.place ? `<span>📍 ${r.place}</span>` : ''}
+        ${r.memo ? `<span>💬 ${r.memo}</span>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function deleteRecord(id) {
+  records = records.filter(r => r.id !== id);
+  saveRecords();
+  renderBirdList(document.getElementById('searchInput').value);
+  renderLog();
+}
+
+function saveRecords() {
+  localStorage.setItem('yachoRecords', JSON.stringify(records));
+}
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ===== INIT =====
+function init() {
+  // Populate bird select
+  const sel = document.getElementById('recordBird');
+  const groups = {};
+  BIRDS.forEach(b => {
+    if (!groups[b.group]) groups[b.group] = [];
+    groups[b.group].push(b);
+  });
+  Object.entries(groups).forEach(([group, birds]) => {
+    const og = document.createElement('optgroup');
+    og.label = group;
+    birds.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.name;
+      opt.textContent = b.name;
+      og.appendChild(opt);
+    });
+    sel.appendChild(og);
+  });
+
+  // Set today's date
+  document.getElementById('recordDate').value = new Date().toISOString().split('T')[0];
+
+  renderBirdList();
+  renderLog();
+}
+
+init();
+</script>
+</body>
+</html>
